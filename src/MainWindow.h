@@ -74,6 +74,7 @@ public:
         QLabel *versionLabel;
         QWidget *editorDockTitleWidget;
         QWidget *consoleDockTitleWidget;
+        QWidget *parameterDockTitleWidget;
         
 	QString editortype;	
 	bool useScintilla;
@@ -149,6 +150,7 @@ private slots:
 	void hideToolbars();
 	void hideEditor();
 	void hideConsole();
+	void hideParameters();
 
 private slots:
 	void selectFindType(int);
@@ -200,8 +202,10 @@ public slots:
 	void actionReloadRenderPreview();
         void on_editorDock_visibilityChanged(bool);
         void on_consoleDock_visibilityChanged(bool);
+        void on_parameterDock_visibilityChanged(bool);
         void editorTopLevelChanged(bool);
         void consoleTopLevelChanged(bool);
+        void parameterTopLevelChanged(bool);
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();
 #endif
