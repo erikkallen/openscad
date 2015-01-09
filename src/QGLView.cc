@@ -305,7 +305,57 @@ bool QGLView::save(const char *filename)
 
 void QGLView::wheelEvent(QWheelEvent *event)
 {
-	this->cam.zoom(event->delta());
+    double dx = 0;
+    double dy = 0;
+    if (event->orientation() == Qt::Horizontal)
+        dx = -event->delta() *0.7;
+    else
+        dy = -event->delta() * 0.7;
+    if ((QApplication::keyboardModifiers() & Qt::MetaModifier) != 0) {
+        double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
+        double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
+        double my = 0;
+
+        Matrix3d aax, aay, aaz, tm3;
+        aax = Eigen::AngleAxisd(-(cam.object_rot.x()/180) * M_PI, Vector3d::UnitX());
+        aay = Eigen::AngleAxisd(-(cam.object_rot.y()/180) * M_PI, Vector3d::UnitY());
+        aaz = Eigen::AngleAxisd(-(cam.object_rot.z()/180) * M_PI, Vector3d::UnitZ());
+        tm3 = Matrix3d::Identity();
+        tm3 = aaz * (aay * (aax * tm3));
+
+        Matrix4d tm;
+        tm = Matrix4d::Identity();
+        for (int i=0;i<3;i++) for (int j=0;j<3;j++) tm(j,i)=tm3(j,i);
+
+        Matrix4d vec;
+        vec <<
+          0,  0,  0,  mx,
+          0,  0,  0,  my,
+          0,  0,  0,  mz,
+          0,  0,  0,  1
+        ;
+        tm = tm * vec;
+        cam.object_trans.x() += tm(0,3);
+        cam.object_trans.y() += tm(1,3);
+        cam.object_trans.z() += tm(2,3);
+
+
+
+    } else if ((QApplication::keyboardModifiers() & Qt::AltModifier) != 0) {
+        cam.zoom(-12.0 * dy);
+    } else {
+        cam.object_rot.x() += dy;
+        if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0)
+          cam.object_rot.y() += dx;
+        else
+          cam.object_rot.z() += dx;
+
+        normalizeAngle(cam.object_rot.x());
+        normalizeAngle(cam.object_rot.y());
+        normalizeAngle(cam.object_rot.z());
+    }
+
+
   updateGL();
 }
 
